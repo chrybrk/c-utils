@@ -20,7 +20,6 @@
  * 8. K-way
  * 9. Hash-map
  * 10. Iterator
- * 11. Dealocator
  *
  * I may or may not use `internet` for illegal stuff,
  * but if you wanna be legal.
@@ -31,18 +30,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
- * Allocator and Dealocator -
- *
- * Allocator will keep track of the malloc'd stuff.
- * Dealocator will free those malloc'd stuff.
- *
- * Pretty Simple Stuff.
-*/
-void *__alloc_function__(ssize_t nbytes);
-void dealloc();
-#define alloc(T, size) (T)__alloc_function__(size)
+			 █████████                                         █████  █████  █████     ███  ████         
+			███░░░░░███                                       ░░███  ░░███  ░░███     ░░░  ░░███         
+		 ███     ░░░   ██████  ████████   ██████             ░███   ░███  ███████   ████  ░███   █████ 
+		░███          ███░░███░░███░░███ ███░░███ ██████████ ░███   ░███ ░░░███░   ░░███  ░███  ███░░  
+		░███         ░███ ░███ ░███ ░░░ ░███████ ░░░░░░░░░░  ░███   ░███   ░███     ░███  ░███ ░░█████ 
+		░░███     ███░███ ░███ ░███     ░███░░░              ░███   ░███   ░███ ███ ░███  ░███  ░░░░███
+		 ░░█████████ ░░██████  █████    ░░██████             ░░████████    ░░█████  █████ █████ ██████ 
+			░░░░░░░░░   ░░░░░░  ░░░░░      ░░░░░░               ░░░░░░░░      ░░░░░  ░░░░░ ░░░░░ ░░░░░░  
+*/                                                                                               
+
 
 /*
  * Unwrap -
@@ -51,6 +51,18 @@ void dealloc();
 void *__unwrap_log__(void*, char*, int, char*);
 #define unwrap(value)	\
 	__unwrap_log__(value, (char*)__FILE__, __LINE__, (char*)__FUNCTION__)
+
+
+/*
+			 █████        ███           █████   
+			░░███        ░░░           ░░███    
+			 ░███        ████   █████  ███████  
+			 ░███       ░░███  ███░░  ░░░███░   
+			 ░███        ░███ ░░█████   ░███    
+			 ░███      █ ░███  ░░░░███  ░███ ███
+			 ███████████ █████ ██████   ░░█████ 
+			░░░░░░░░░░░ ░░░░░ ░░░░░░     ░░░░░  
+*/
 
 /*
  * List -
@@ -61,6 +73,8 @@ void *__unwrap_log__(void*, char*, int, char*);
  * We can store n-data until it fills itself and extend.
  *
 */
+
+#define __LIST_MAX_MEMEORY_CONSUME__ 16000000 // 16MB
 typedef struct LIST_STRUCT list_T;
 
 /*
@@ -105,5 +119,72 @@ void list_extend(list_T*, list_T*);
  * It will free everything from the list.
 */
 void list_free(list_T*);
+
+/*
+		 █████   █████                   █████                 ██████   ██████                    
+		░░███   ░░███                   ░░███                 ░░██████ ██████                     
+		 ░███    ░███   ██████    █████  ░███████              ░███░█████░███   ██████   ████████ 
+		 ░███████████  ░░░░░███  ███░░   ░███░░███  ██████████ ░███░░███ ░███  ░░░░░███ ░░███░░███
+		 ░███░░░░░███   ███████ ░░█████  ░███ ░███ ░░░░░░░░░░  ░███ ░░░  ░███   ███████  ░███ ░███
+		 ░███    ░███  ███░░███  ░░░░███ ░███ ░███             ░███      ░███  ███░░███  ░███ ░███
+		 █████   █████░░████████ ██████  ████ █████            █████     █████░░████████ ░███████ 
+		░░░░░   ░░░░░  ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░            ░░░░░     ░░░░░  ░░░░░░░░  ░███░░░  
+																																										 ░███     
+																																										 █████    
+																																										░░░░░     
+*/
+
+/*
+ * This hash library is inspired (copied) from this reference.
+ * https://benhoyt.com/writings/hash-table-in-c/
+ *
+ * Legal Notice:
+ * You may use however you want to, including the right godfather.
+ *
+ * It also uses `djb2` hashing function. 
+ * reference: http://www.cse.yorku.ca/~oz/hash.html
+*/
+
+/*
+ * hash struct consist of capacity, length and buffer.
+ * it is a pretty simple and straight forward hash library.
+*/
+#define MAX_HASH_TABLE_CAPACITY 1024
+typedef struct HASH_STRUCT hash_T;
+
+/*
+ * init hash table with default capacity,
+ * it still needs improvement for allocating more than default capacity.
+ *
+ * TODO: More capacity.
+*/
+hash_T* init_hash(void);
+
+/*
+ * it will free the buffer first and then free the hash itself.
+ * It may need to free all the keys, as in `benhoyt` implementation.
+ *
+ * But, for my use case i think it is fine to leave it as it is.
+*/
+void hash_free(hash_T*);
+
+/*
+ * It will return list of keys,
+ * that are present int the hashmap.
+*/
+const char** hash_bucket(hash_T*);
+
+/*
+ * It will set the value if it founds the key in entry,
+ * else it will create new entry.
+*/
+void hash_set(hash_T*, const char*, void*);
+
+/*
+ * it will loop through from hash_index till capacity.
+ * if it found non-null value, it will return.
+ * else null will be returned
+*/
+void* hash_get(hash_T*, const char*);
 
 #endif
