@@ -118,15 +118,15 @@ void list_free(list_T *list)
 */
 
 typedef struct {
-	const char* key;
-	void* value;
+	const char *key;
+	void *value;
 } hash_entry;
 
 typedef struct HASH_STRUCT {
-	hash_entry* buffer;
+	hash_entry *buffer;
 	ssize_t capacity;
 	ssize_t length;
-	char** keys;
+	char **keys;
 } hash_T;
 
 /*
@@ -139,7 +139,7 @@ typedef struct HASH_STRUCT {
  * I am not the godfather of this hashing function but if it works on your project, use it.
 */
 unsigned long long
-hash_function(const char* string)
+hash_function(const char *string)
 {
 	// magic number is supposed to be `33`.
 	unsigned long hash = 5381;
@@ -151,31 +151,27 @@ hash_function(const char* string)
 	return hash;
 }
 
-hash_T* init_hash(void)
+hash_T *init_hash(void)
 {
-	hash_T* hash = malloc(sizeof(struct HASH_STRUCT));
-	if (hash == NULL) return NULL;
+	hash_T *hash = malloc(sizeof(struct HASH_STRUCT));
+	unwrap(hash);
 
 	hash->length = 0;
 	hash->capacity = MAX_HASH_TABLE_CAPACITY;
 	hash->buffer = malloc(sizeof(hash_entry) * hash->capacity);
-	if (hash->buffer == NULL)
-	{
-		free(hash);
-		return NULL;
-	}
+	unwrap(hash);
 
 	return hash;
 }
 
-void hash_free(hash_T* hash)
+void hash_free(hash_T *hash)
 {
 	free(hash->keys);
 	free(hash->buffer);
 	free(hash);
 }
 
-void hash_set(hash_T* hash, const char* key, void* value)
+void hash_set(hash_T *hash, const char *key, void *value)
 {
 	unsigned long long magic_number = hash_function(key);
 	ssize_t index = (ssize_t)(magic_number & (MAX_HASH_TABLE_CAPACITY - 1));
@@ -210,7 +206,7 @@ void hash_set(hash_T* hash, const char* key, void* value)
 	}
 }
 
-void* hash_get(hash_T* hash, const char* key)
+void* hash_get(hash_T *hash, const char *key)
 {
 	unsigned long long magic_number = hash_function(key);
 	ssize_t index = (ssize_t)(magic_number & (MAX_HASH_TABLE_CAPACITY - 1));
@@ -227,7 +223,160 @@ void* hash_get(hash_T* hash, const char* key)
 	return NULL;
 }
 
-const char** hash_bucket(hash_T* hash)
+const char **hash_bucket(hash_T *hash)
 {
 	return (const char**)hash->keys;
+}
+
+/*
+		 █████        ███             █████                   █████
+		░░███        ░░░             ░░███                   ░░███ 
+		 ░███        ████  ████████   ░███ █████  ██████   ███████ 
+		 ░███       ░░███ ░░███░░███  ░███░░███  ███░░███ ███░░███ 
+		 ░███        ░███  ░███ ░███  ░██████░  ░███████ ░███ ░███ 
+		 ░███      █ ░███  ░███ ░███  ░███░░███ ░███░░░  ░███ ░███ 
+		 ███████████ █████ ████ █████ ████ █████░░██████ ░░████████
+		░░░░░░░░░░░ ░░░░░ ░░░░ ░░░░░ ░░░░ ░░░░░  ░░░░░░   ░░░░░░░░ 
+																															 
+																															 
+																															 
+		 █████        ███           █████                          
+		░░███        ░░░           ░░███                           
+		 ░███        ████   █████  ███████                         
+		 ░███       ░░███  ███░░  ░░░███░                          
+		 ░███        ░███ ░░█████   ░███                           
+		 ░███      █ ░███  ░░░░███  ░███ ███                       
+		 ███████████ █████ ██████   ░░█████                        
+		░░░░░░░░░░░ ░░░░░ ░░░░░░     ░░░░░                         
+*/
+
+// modern computer are faster to loop through smaller that this limit.
+#define __MAX_ELEMENT_FOR_BSEARCH__ 100000
+
+/*
+ * Node -
+ * Stores data and pointer to the next node.
+*/
+typedef struct NODE_STRUCT {
+	struct NODE_STRUCT *next;	// pointer to next node
+	void *data;	// contains user data
+} node_T;
+
+typedef struct LINKED_LIST_STRUCT {
+	node_T *head; // where linked list starts
+	ssize_t length; // total length of linked list
+	
+	// metadata for binary search
+	struct searching_list {
+		node_T *mid;
+		node_T *end;
+		ssize_t where;
+	} store;
+} llist_T;
+
+llist_T *init_llist()
+{
+	llist_T *llist = malloc(sizeof(struct LINKED_LIST_STRUCT));
+	unwrap(llist);
+
+	llist->head = NULL;
+	llist->length = 0;
+
+	llist->store.mid = NULL;
+	llist->store.end = NULL;
+	llist->store.where = 0;
+
+	return llist;
+}
+
+void llist_insert(llist_T *llist, ssize_t index, void *element)
+{
+}
+
+void *llist_get(llist_T *llist, ssize_t index)
+{
+	if (index >= llist->length || index < 0)
+		return NULL;
+
+	node_T *p = llist->head;
+	while (p->next != NULL && index > 0)
+	{
+		p = p->next;
+		index--;
+	}
+
+	return p->data;
+}
+
+void *llist_delete(llist_T *llist, ssize_t index)
+{
+	return NULL;
+}
+
+void *llist_push(llist_T *llist, void *element)
+{
+	// if element is null, we don't need to store it.
+	unwrap(element);
+
+	// head is a special case, right?
+	if (llist->head == NULL)
+	{
+		llist->head = malloc(sizeof(struct NODE_STRUCT));
+		unwrap(llist->head);
+
+		llist->head->next = NULL;
+		llist->head->data = element;
+
+		llist->length++;
+
+		// we don't have many blocks to work with,
+		// so mid and end both are same.
+
+		llist->store.mid = llist->head;
+		llist->store.end = llist->head;
+		llist->store.where = 0;
+
+		// returning head can mess - up things from user end,
+		// but that's just user.
+		// In a hope that every user who uses this library takes
+		// fine pre-caution over memory and space.
+		return llist->head;
+	}
+
+	// let we are not adding element to head.
+	node_T *_np = llist->head;
+
+	// loop through until we reach the Node that hasn't been allocated.
+	while (_np->next != NULL)
+		_np = _np->next;
+
+	// we need alloc size for that new node.
+	_np->next = malloc(sizeof(struct NODE_STRUCT));
+
+	// make sure we unwrap it, so we know `malloc` fed-up.
+	unwrap(_np->next);
+
+	_np->next->data = element;
+	_np->next->next = NULL;
+
+	llist->length++;
+
+	// last element is the end. 
+	llist->store.end = _np->next;
+
+	// we need middle element, we already have last middle
+	// we just need to loop until we get to another middle element.
+	// it should'nt really be that costly.
+	while (llist->store.where < (llist->length / 2))
+	{
+		llist->store.mid = llist->store.mid->next;
+		llist->store.where++;
+	}
+
+	// we return whatever mess user have put.
+	return _np->next;
+}
+
+void *llist_search(llist_T *llist, ssize_t index)
+{
 }

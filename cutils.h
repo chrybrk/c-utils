@@ -33,14 +33,25 @@
 #include <string.h>
 
 /*
-			 █████████                                         █████  █████  █████     ███  ████         
-			███░░░░░███                                       ░░███  ░░███  ░░███     ░░░  ░░███         
-		 ███     ░░░   ██████  ████████   ██████             ░███   ░███  ███████   ████  ░███   █████ 
-		░███          ███░░███░░███░░███ ███░░███ ██████████ ░███   ░███ ░░░███░   ░░███  ░███  ███░░  
-		░███         ░███ ░███ ░███ ░░░ ░███████ ░░░░░░░░░░  ░███   ░███   ░███     ░███  ░███ ░░█████ 
-		░░███     ███░███ ░███ ░███     ░███░░░              ░███   ░███   ░███ ███ ░███  ░███  ░░░░███
-		 ░░█████████ ░░██████  █████    ░░██████             ░░████████    ░░█████  █████ █████ ██████ 
-			░░░░░░░░░   ░░░░░░  ░░░░░      ░░░░░░               ░░░░░░░░      ░░░░░  ░░░░░ ░░░░░ ░░░░░░  
+			 █████████                               
+			███░░░░░███                              
+		 ███     ░░░   ██████  ████████   ██████   
+		░███          ███░░███░░███░░███ ███░░███  
+		░███         ░███ ░███ ░███ ░░░ ░███████   
+		░░███     ███░███ ░███ ░███     ░███░░░    
+		 ░░█████████ ░░██████  █████    ░░██████   
+			░░░░░░░░░   ░░░░░░  ░░░░░      ░░░░░░    
+																							 
+																							 
+																							 
+		 █████  █████  █████     ███  ████         
+		░░███  ░░███  ░░███     ░░░  ░░███         
+		 ░███   ░███  ███████   ████  ░███   █████ 
+		 ░███   ░███ ░░░███░   ░░███  ░███  ███░░  
+		 ░███   ░███   ░███     ░███  ░███ ░░█████ 
+		 ░███   ░███   ░███ ███ ░███  ░███  ░░░░███
+		 ░░████████    ░░█████  █████ █████ ██████ 
+			░░░░░░░░      ░░░░░  ░░░░░ ░░░░░ ░░░░░░  
 */                                                                                               
 
 
@@ -158,7 +169,7 @@ typedef struct HASH_STRUCT hash_T;
  *
  * TODO: More capacity.
 */
-hash_T* init_hash(void);
+hash_T *init_hash(void);
 
 /*
  * it will free the buffer first and then free the hash itself.
@@ -172,7 +183,7 @@ void hash_free(hash_T*);
  * It will return list of keys,
  * that are present int the hashmap.
 */
-const char** hash_bucket(hash_T*);
+const char **hash_bucket(hash_T*);
 
 /*
  * It will set the value if it founds the key in entry,
@@ -185,6 +196,90 @@ void hash_set(hash_T*, const char*, void*);
  * if it found non-null value, it will return.
  * else null will be returned
 */
-void* hash_get(hash_T*, const char*);
+void *hash_get(hash_T*, const char*);
+
+
+/*
+		 █████        ███             █████                   █████
+		░░███        ░░░             ░░███                   ░░███ 
+		 ░███        ████  ████████   ░███ █████  ██████   ███████ 
+		 ░███       ░░███ ░░███░░███  ░███░░███  ███░░███ ███░░███ 
+		 ░███        ░███  ░███ ░███  ░██████░  ░███████ ░███ ░███ 
+		 ░███      █ ░███  ░███ ░███  ░███░░███ ░███░░░  ░███ ░███ 
+		 ███████████ █████ ████ █████ ████ █████░░██████ ░░████████
+		░░░░░░░░░░░ ░░░░░ ░░░░ ░░░░░ ░░░░ ░░░░░  ░░░░░░   ░░░░░░░░ 
+																															 
+																															 
+																															 
+		 █████        ███           █████                          
+		░░███        ░░░           ░░███                           
+		 ░███        ████   █████  ███████                         
+		 ░███       ░░███  ███░░  ░░░███░                          
+		 ░███        ░███ ░░█████   ░███                           
+		 ░███      █ ░███  ░░░░███  ░███ ███                       
+		 ███████████ █████ ██████   ░░█████                        
+		░░░░░░░░░░░ ░░░░░ ░░░░░░     ░░░░░                         
+*/
+
+/*
+ * Linked list -
+ *
+ * It consist of nodes and pointer to next node, with the data.
+ * Linked list will have a structure which will also include few metadata.
+ *
+ * Linear search on linked list is our only option,
+ * we can surely improve linear search by front-move linear search.
+ *
+ * A front-move linear search is moving the found element in O(n) and,
+ * moving the element to the front.
+*/
+typedef struct NODE_STRUCT node_T;
+typedef struct LINKED_LIST_STRUCT llist_T;
+
+/*
+ * init_linked_list -
+ * create linked list and return pointer of it.
+*/
+llist_T *init_llist();
+
+/*
+ * linked_list_insert -
+ * takes llist_T* list, ssize_t index, void* element
+ * add element to the linked list at a index.
+*/
+void llist_insert(llist_T *, ssize_t, void *);
+
+/*
+ * linked_list_get -
+ * takes llist_T* list, ssize_t index
+ * returns element from the linked_list.
+ *
+ * It uses linear search so it will be O(n) time, O(1) space
+*/
+void *llist_get(llist_T *, ssize_t);
+
+/*
+ * linked_list_delete -
+ * takes llist_T* list, ssize_t index
+ * deletes element from the list if it exist.
+ * returns deleted element or NULL.
+*/
+void *llist_delete(llist_T *, ssize_t);
+
+/*
+ * linked_list_push -
+ * takes llist* list, void* element
+ * add element to the linked list at end.
+*/
+void *llist_push(llist_T *, void *);
+
+/*
+ * linked_list_search - 
+ * takes llist* list, ssize_t index 
+ * returns element if found in list else returns NULL
+ *
+ * It uses binary search which reduces time complexity O(log n);
+*/
+void *llist_search(llist_T *, ssize_t);
 
 #endif

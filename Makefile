@@ -1,2 +1,2 @@
 all:
-	cc src/*.c -Isrc/include -o bin/cutils
+	cc *.c -I. -o bin/cutils
